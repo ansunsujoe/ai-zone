@@ -133,3 +133,20 @@ dmypy.json
 
 # Custom
 datasets/
+!ai_zone/datasets
+
+# NLP-specific
+glove/
+
+# Other file extensions
+*.zip
+*.tar.gz
+*.png
+
+# Security
+*.pem
+
+# Models
+experiments/models
+*.pb
+*.index

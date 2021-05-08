@@ -1,3 +1,11 @@
-numpy==1.19.5
-tensorflow==2.5.0rc0
-setuptools==54.2.0
+numpy
+tensorflow
+setuptools
+scikit-learn
+scipy
+matplotlib
+seaborn
+torch
+nltk
+pydot
+graphviz
