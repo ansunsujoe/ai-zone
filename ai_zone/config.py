@@ -1,7 +1,7 @@
 import tensorflow as tf
 import logging
 
-class Hyperparams():
+class Config():
     def __init__(self):
         self.dictionary = {}
             
@@ -9,7 +9,7 @@ class Hyperparams():
         try:
             return self.dictionary[name]
         except KeyError:
-            raise Exception("Hyperparameter " + str(name) + " is not defined. Please define it by using the set() method.")
+            raise Exception("Config " + str(name) + " is not defined. Please define it by using the add() method.")
     
     def add(self, name, value):
         self.dictionary[name] = value

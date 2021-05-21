@@ -2,14 +2,14 @@ import tensorflow as tf
 from tensorflow.keras.layers import Embedding, LSTM, Dropout, Dense, Concatenate,  Bidirectional
 from question_answering.models import TruncateLayer
 
-def QuestionAnswerabilityModel(hp):
+def QuestionAnswerabilityModel(c):
     # Inputs
     passage_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="p_input")
     question_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="q_input")
     
     # Passage processing
-    p_vectorize = hp.get("vectorizer")(passage_input)
-    p_embed = Embedding(hp.get("vocab_size"), hp.get("embedding_dim"))(p_vectorize)
+    p_vectorize = c.get("vectorizer")(passage_input)
+    p_embed = Embedding(c.get("vocab_size"), c.get("embedding_dim"))(p_vectorize)
     
     # Passage stacked LSTM
     p_lstm_1 = LSTM(64, return_sequences=True)(p_embed)
@@ -17,9 +17,9 @@ def QuestionAnswerabilityModel(hp):
     p_fclayer = Dense(64, name="p_dense", activation="relu")(p_lstm_2)
     
     # Question processing
-    q_vectorize = hp.get("vectorizer")(question_input)
-    q_embed = hp.get("embedding")(q_vectorize)
-    q_truncate = TruncateLayer(hp.get("max_question_len"))(q_embed)
+    q_vectorize = c.get("vectorizer")(question_input)
+    q_embed = c.get("embedding")(q_vectorize)
+    q_truncate = TruncateLayer(c.get("max_question_len"))(q_embed)
     
     # Question stacked LSTM
     q_lstm_1 = LSTM(64, name="q_lstm_1", return_sequences=True)(q_truncate)
@@ -38,15 +38,15 @@ def QuestionAnswerabilityModel(hp):
     model.summary()
     return model
 
-def AttentionedAnswerability(hp):
+def AttentionedAnswerability(c):
     # Inputs
     passage_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="p_input")
     question_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="q_input")
     
     # Passage processing
-    vectorize = hp.get("vectorizer")
+    vectorize = c.get("vectorizer")
     p_vectorize = vectorize(passage_input)
-    embed = Embedding(hp.get("vocab_size"), hp.get("embedding_dim"), mask_zero=True)
+    embed = Embedding(c.get("vocab_size"), c.get("embedding_dim"), mask_zero=True)
     p_embed = embed(p_vectorize)
     
     # Passage stacked Bidirectional LSTM
@@ -81,15 +81,15 @@ def AttentionedAnswerability(hp):
     return model
 
 
-def AttentionedAnswerIndex(hp):
+def AttentionedAnswerIndex(c):
     # Inputs
     passage_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="p_input")
     question_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="q_input")
     
     # Passage processing
-    vectorize = hp.get("vectorizer")
+    vectorize = c.get("vectorizer")
     p_vectorize = vectorize(passage_input)
-    embed = Embedding(hp.get("vocab_size"), hp.get("embedding_dim"), mask_zero=True)
+    embed = Embedding(c.get("vocab_size"), c.get("embedding_dim"), mask_zero=True)
     p_embed = embed(p_vectorize)
     
     # Passage stacked Bidirectional LSTM
@@ -124,23 +124,23 @@ def AttentionedAnswerIndex(hp):
     return model
 
 
-def QAFirstIndex(hp):
+def QAFirstIndex(c):
     # Inputs
     passage_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="p_input")
     question_input = tf.keras.Input(shape=(1,), dtype=tf.string, name="q_input")
     
     # Passage processing
-    p_vectorize = hp.get("vectorizer")(passage_input)
-    p_embed = Embedding(hp.get("vocab_size"), hp.get("embedding_dim"))(p_vectorize)
+    p_vectorize = c.get("vectorizer")(passage_input)
+    p_embed = Embedding(c.get("vocab_size"), c.get("embedding_dim"))(p_vectorize)
     
     # Passage stacked LSTM
     p_lstm_1 = LSTM(64, name="p_lstm_1", return_sequences=True)(p_embed)
     p_lstm_2 = LSTM(64, name="p_lstm_2", return_sequences=False)(p_lstm_1)
     
     # Question processing
-    q_vectorize = hp.get("vectorizer")(question_input)
-    q_embed = hp.get("embedding")(q_vectorize)
-    q_truncate = TruncateLayer(hp.get("max_question_len"))(q_embed)
+    q_vectorize = c.get("vectorizer")(question_input)
+    q_embed = c.get("embedding")(q_vectorize)
+    q_truncate = TruncateLayer(c.get("max_question_len"))(q_embed)
     
     # Question stacked LSTM
     q_lstm_1 = LSTM(64, name="q_lstm_1", return_sequences=True)(q_truncate)
@@ -159,7 +159,7 @@ def QAFirstIndex(hp):
     model.summary()
     return model
 
-def Seq2Seq(hp):
+def Seq2Seq(c):
     # Variables
     latent_dim = 1024
     
@@ -167,8 +167,8 @@ def Seq2Seq(hp):
     encoder_inputs = tf.keras.Input(shape=(1,), dtype=tf.string, name="e_input")
     
     # Passage processing
-    vectorize = hp.get("vectorizer")
-    embed = Embedding(hp.get("vocab_size") + 1, hp.get("embedding_dim"), mask_zero=True)
+    vectorize = c.get("vectorizer")
+    embed = Embedding(c.get("vocab_size") + 1, c.get("embedding_dim"), mask_zero=True)
     encoder_vectorize = vectorize(encoder_inputs)
     encoder_embed = embed(encoder_vectorize)
     
@@ -183,7 +183,7 @@ def Seq2Seq(hp):
     # Vectorize and embed
     decoder_vectorize = vectorize(decoder_inputs)
     decoder_embed = embed(decoder_vectorize)
-    truncate = TruncateLayer(hp.get("max_answer_len"))
+    truncate = TruncateLayer(c.get("max_answer_len"))
     decoder_truncate = truncate(decoder_embed)
     
     # We set up our decoder to return full output sequences,
@@ -192,7 +192,7 @@ def Seq2Seq(hp):
     decoder_lstm = LSTM(latent_dim, name="lstm", return_sequences=True, return_state=True)
     decoder_outputs, _, _ = decoder_lstm(decoder_truncate,
                                         initial_state=encoder_states)
-    decoder_dense = Dense(hp.get("vocab_size"), activation="softmax")
+    decoder_dense = Dense(c.get("vocab_size"), activation="softmax")
     decoder_outputs = decoder_dense(decoder_outputs)
     
     # Initialize and return the model
