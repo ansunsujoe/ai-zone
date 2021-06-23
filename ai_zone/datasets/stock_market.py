@@ -1,7 +1,8 @@
 import requests, json
 from ai_zone.config import Config
-from definitions import CONFIG_PATH
+from definitions import DATASET_DIR
 import pandas as pd
+from pathlib import Path
 
 def read_intraday(c:Config, ticker):
     url = "https://alpha-vantage.p.rapidapi.com/query"
@@ -11,7 +12,7 @@ def read_intraday(c:Config, ticker):
         "symbol": ticker.upper(),
         "datatype": "json",
         "output_size": "compact"
-    } 
+    }
     headers = {
         'x-rapidapi-key': c.get("alphavantage_key"),
         'x-rapidapi-host': "alpha-vantage.p.rapidapi.com"
@@ -22,10 +23,10 @@ def read_intraday(c:Config, ticker):
 
 def read_daily(c:Config, ticker):
     # Make the request and get the response
-    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&apikey=demo'
+    url = 'https://www.alphavantage.co/query'
     params = {
         "function": "TIME_SERIES_DAILY_ADJUSTED",
-        "symbol": "IBM",
+        "symbol": ticker,
         "apikey": c.get("alphavantage_key"),
         "outputsize": "full"
     }
@@ -50,12 +51,21 @@ def read_daily(c:Config, ticker):
 
 
 if __name__ == "__main__":
-    # Read json file
-    data = json.loads(open(CONFIG_PATH, "r").read())
-    
-    # Config
+    # File paths needed
+    tickers_path = Path("additional_files/tickers.txt")
+    daily_data_folder = Path(DATASET_DIR) / "stock-data" / "daily"
     c = Config()
-    c.add("alphavantage_key", data["alphavantage"]["apiKey"])
+    
+    # Define tickers
+    tickers = []
+    with open(tickers_path) as f:
+        tickers = f.readlines()
+    tickers = [x.strip() for x in tickers] 
     
     # Print
-    print(read_daily(c, "MSFT"))
+    for ticker in tickers:
+        df = read_daily(c, ticker)
+        ticker_file = daily_data_folder / f'{ticker}.csv'
+        if not ticker_file.exists():
+            print(f'Generating file for ticker {ticker}')
+            df.to_csv(ticker_file)

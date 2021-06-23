@@ -145,7 +145,7 @@ glove/
 
 # Security
 *.pem
-security.json
+config/security.json
 
 # Models
 experiments/models

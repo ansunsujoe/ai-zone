@@ -1,9 +1,16 @@
 import tensorflow as tf
-import logging
+from definitions import CONFIG_DIR
+from pathlib import Path
+import json
 
 class Config():
     def __init__(self):
         self.dictionary = {}
+        
+        # Get everything from security config
+        data = json.loads(open(Path(CONFIG_DIR) / "security.json", "r").read())
+        for key in data:
+            self.add(key, data[key])
             
     def get(self, name):
         try:
