@@ -38,7 +38,10 @@ def read_daily(c:Config, ticker):
     array = []
     
     # Iterate through timeseries
-    timeseries = response.json()["Time Series (Daily)"]
+    try:
+        timeseries = response.json()["Time Series (Daily)"]
+    except Exception:
+        return
     for key in timeseries:
         day = timeseries[key]
         array.append([day["1. open"], day["2. high"], day["3. low"], day["4. close"],
@@ -65,6 +68,8 @@ if __name__ == "__main__":
     # Print
     for ticker in tickers:
         df = read_daily(c, ticker)
+        if df is None:
+            continue
         ticker_file = daily_data_folder / f'{ticker}.csv'
         if not ticker_file.exists():
             print(f'Generating file for ticker {ticker}')

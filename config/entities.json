@@ -1,6 +1,0 @@
-{
-    "alphavantage_key": {
-        "description": "An API key to get stock data",
-        "context": "ML"
-    }
-}

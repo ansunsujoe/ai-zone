@@ -1,13 +1,6 @@
 numpy
-tensorflow
-setuptools
 scikit-learn
-scipy
 matplotlib
-seaborn
 torch
-nltk
-pydot
-graphviz
 requests
 pandas
